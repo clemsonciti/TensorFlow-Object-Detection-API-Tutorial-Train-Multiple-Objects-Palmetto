@@ -10,35 +10,30 @@ There are several good tutorials available for how to use TensorFlow’s Object 
 ~~~
 $ cd
 $ mkdir tensorflow
+$ cd tensorflow
 $ wget https://github.com/tensorflow/models/archive/master.zip
 $ unzip master.zip
 $ mv models-master models
 $ wget http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
 $ tar xzf faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
 $ mv faster_rcnn_inception_v2_coco_2018_01_28 models/research/object_detection/
-~~
+$ mkdir tmp
+$ cd tmp
+$ wget https://github.com/clemsonciti/TensorFlow-Object-Detection-API-Tutorial-Train-Multiple-Objects-Palmetto/archive/master.zip
+$ cd ..
+$ cp -R tmp/TensorFlow-Object-Detection-API-Tutorial-Train-Multiple-Objects-Palmetto-master/*  models/research/object_detection/
+$ module load anaconda3/2019.10-gcc/8.3.1 cuda/10.2.89-gcc/8.3.1 cudnn/8.0.0.180-10.2-linux-x64-gcc/8.3.1
+$ source activate tf_env_cpu
+$ conda install -c anaconda protobuf
+$ pip install --user pillow
+$ pip install --user lxml
+$ pip install --user Cython
+$ pip install --user contextlib2
+$ pip install --user matplotlib
+$ pip install --user pandas
+$ pip install --user opencv-python
+~~~
 
-This tutorial was originally done using TensorFlow v1.5 and this [GitHub commit](https://github.com/tensorflow/models/tree/079d67d9a0b3407e8d074a200780f3835413ef99) of the TensorFlow Object Detection API. If portions of this tutorial do not work, it may be necessary to install TensorFlow v1.5 and use this exact commit rather than the most up-to-date version.
-
-#### 2b. Download the Faster-RCNN-Inception-V2-COCO model from TensorFlow's model zoo
-TensorFlow provides several object detection models (pre-trained classifiers with specific neural network architectures) in its [model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md). Some models (such as the SSD-MobileNet model) have an architecture that allows for faster detection but with less accuracy, while some models (such as the Faster-RCNN model) give slower detection but with more accuracy. I initially started with the SSD-MobileNet-V1 model, but it didn’t do a very good job identifying the cards in my images. I re-trained my detector on the Faster-RCNN-Inception-V2 model, and the detection worked considerably better, but with a noticeably slower speed.
-
-<p align="center">
-  <img src="doc/rcnn_vs_ssd.jpg">
-</p>
-
-You can choose which model to train your objection detection classifier on. If you are planning on using the object detector on a device with low computational power (such as a smart phone or Raspberry Pi), use the SDD-MobileNet model. If you will be running your detector on a decently powered laptop or desktop PC, use one of the RCNN models. 
-
-This tutorial will use the Faster-RCNN-Inception-V2 model. [Download the model here.](http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz) Open the downloaded faster_rcnn_inception_v2_coco_2018_01_28.tar.gz file with a file archiver such as WinZip or 7-Zip and extract the faster_rcnn_inception_v2_coco_2018_01_28 folder to the C:\tensorflow1\models\research\object_detection folder. (Note: The model date and version will likely change in the future, but it should still work with this tutorial.)
-
-#### 2c. Download this tutorial's repository from GitHub
-Download the full repository located on this page (scroll to the top and click Clone or Download) and extract all the contents directly into the C:\tensorflow1\models\research\object_detection directory. (You can overwrite the existing "README.md" file.) This establishes a specific directory structure that will be used for the rest of the tutorial. 
-
-At this point, here is what your \object_detection folder should look like:
-
-<p align="center">
-  <img src="doc/object_detection_directory.jpg">
-</p>
 
 This repository contains the images, annotation data, .csv files, and TFRecords needed to train a "Pinochle Deck" playing card detector. You can use these images and data to practice making your own Pinochle Card Detector. It also contains Python scripts that are used to generate the training data. It has scripts to test out the object detection classifier on images, videos, or a webcam feed. You can ignore the \doc folder and its files; they are just there to hold the images used for this readme.
 
@@ -54,38 +49,7 @@ If you want to train your own object detector, delete the following files (do no
 
 Now, you are ready to start from scratch in training your own object detector. This tutorial will assume that all the files listed above were deleted, and will go on to explain how to generate the files for your own training dataset.
 
-#### 2d. Set up new Anaconda virtual environment
-Next, we'll work on setting up a virtual environment in Anaconda for tensorflow-gpu. From the Start menu in Windows, search for the Anaconda Prompt utility, right click on it, and click “Run as Administrator”. If Windows asks you if you would like to allow it to make changes to your computer, click Yes.
 
-In the command terminal that pops up, create a new virtual environment called “tensorflow1” by issuing the following command:
-```
-C:\> conda create -n tensorflow1 pip python=3.5
-```
-Then, activate the environment and update pip by issuing:
-```
-C:\> activate tensorflow1
-
-(tensorflow1) C:\>python -m pip install --upgrade pip
-```
-Install tensorflow-gpu in this environment by issuing:
-```
-(tensorflow1) C:\> pip install --ignore-installed --upgrade tensorflow-gpu
-```
-
-(Note: You can also use the CPU-only version of TensorFow, but it will run much slower. If you want to use the CPU-only version, just use "tensorflow" instead of "tensorflow-gpu" in the previous command.)
-
-Install the other necessary packages by issuing the following commands:
-```
-(tensorflow1) C:\> conda install -c anaconda protobuf
-(tensorflow1) C:\> pip install pillow
-(tensorflow1) C:\> pip install lxml
-(tensorflow1) C:\> pip install Cython
-(tensorflow1) C:\> pip install contextlib2
-(tensorflow1) C:\> pip install jupyter
-(tensorflow1) C:\> pip install matplotlib
-(tensorflow1) C:\> pip install pandas
-(tensorflow1) C:\> pip install opencv-python
-```
 (Note: The ‘pandas’ and ‘opencv-python’ packages are not needed by TensorFlow, but they are used in the Python scripts to generate TFRecords and to work with images, videos, and webcam feeds.)
 
 #### 2e. Configure PYTHONPATH environment variable
